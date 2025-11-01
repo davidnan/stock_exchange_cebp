@@ -1,22 +1,28 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class OrderBook {
-    PriorityQueue<Offer> buyOffers;
-    PriorityQueue<Offer> sellOffers;
+    PriorityBlockingQueue<Offer> buyOffers;
+    PriorityBlockingQueue<Offer> sellOffers;
     List<Transaction> transactions;
+
     public OrderBook(){
-
+        buyOffers = new PriorityBlockingQueue<>(100, Collections.reverseOrder()); // ca sa avem buy offer-ul cu cel mai mare pret mai intai
+        sellOffers = new PriorityBlockingQueue<>(100);
+        transactions = Collections.synchronizedList(new ArrayList<>());
     }
-    public void placeBuyerOffer(){
 
+    public void placeBuyerOffer(Offer offer){
+        buyOffers.add(offer);
     }
-    public void placeSellerOffer(){
 
+    public void placeSellerOffer(Offer offer){
+        sellOffers.add(offer);
     }
+
     public void viewHistory(){
-
+        transactions.forEach(System.out::println);
     }
-
-
 }

@@ -8,7 +8,7 @@ public class Offer implements Comparable<Offer>{
     private OfferType type;
     private Semaphore semaphore;
 
-    public Offer(int tradeId,String company, int noOfShares,int pricePerShare,OfferType type){
+    public Offer(int tradeId,String company, int noOfShares,double pricePerShare,OfferType type){
         this.traderId=tradeId;
         this.company=company;
         this.noOfShares=noOfShares;
@@ -16,6 +16,7 @@ public class Offer implements Comparable<Offer>{
         this.type=type;
         this.semaphore=new Semaphore(noOfShares,true);
     }
+
     public int getTraderId(){
         return this.traderId;
     }
