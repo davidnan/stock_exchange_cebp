@@ -1,19 +1,35 @@
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
+        ExecutorService executor = Executors.newFixedThreadPool(6);
         for (int i = 1; i <= 3; i++) {
-            List<Offer> buyOffers = OfferGenerator.generateOffers(50, i, OfferType.Buying);
+//            List<Offer> buyOffers = OfferGenerator.generateOffers(1, i, OfferType.Buying);
+            List<Offer> buyOffers = OfferGenerator.createHighVolumeOffers(i, OfferType.Buying);
+//            List<Offer> buyOffers = OfferGenerator.createDeterministicOffers(i, OfferType.Buying);
             Buyer buyer = new Buyer(buyOffers, 100 + i * 50);
-            //de creat thread cu buyer-ul
 
-            List<Offer> sellOffers = OfferGenerator.generateOffers(50, i + 3, OfferType.Selling);
+//            List<Offer> sellOffers = OfferGenerator.generateOffers(1, i + 3, OfferType.Selling);
+//            List<Offer> sellOffers = OfferGenerator.createDeterministicOffers(i + 3, OfferType.Selling);
+            List<Offer> sellOffers = OfferGenerator.createHighVolumeOffers(i, OfferType.Buying);
             Seller seller = new Seller(sellOffers, 150 + i*50);
-            //de creat thread cu seller-ul
+            executor.submit(buyer);
+            executor.submit(seller);
         }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        new Thread(() -> {
+            Market.getInstance().printLeftoverOrders();
+//            Market.getInstance().tryToBuyLeftoverOrders();
+//            Market.getInstance().printLeftoverOrders();
+        }).start();
 
-        // Start market processing in a separate thread
-        Market market = Market.getInstance();
-        //de creat thread cu market-ul
     }
 }
