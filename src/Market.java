@@ -1,4 +1,6 @@
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Market implements Runnable {
     private static Market instance;
@@ -18,7 +20,7 @@ public class Market implements Runnable {
 
     public static synchronized Market getInstance(){
         if (instance == null) {
-            instance=new Market();
+            instance = new Market();
         }
         return instance;
     }
@@ -34,7 +36,27 @@ public class Market implements Runnable {
     }
 
     public void run() {
-        //code to do the actual buying
+        // Code to do the actual buying
+    }
+
+    public void printTransactionHistory() {
+        System.out.println("\n=== GLOBAL TRANSACTION HISTORY ===");
+        boolean hasTransactions = false;
+
+        for (Ticker ticker : Ticker.values()) {
+            List<Transaction> tickerTransactions = orderBook.get(ticker).getTransactionHistory();
+            if (!tickerTransactions.isEmpty()) {
+                hasTransactions = true;
+                System.out.println("\n--- " + ticker + " Transactions ---");
+                for (Transaction transaction : tickerTransactions) {
+                    System.out.println(transaction);
+                }
+            }
+        }
+
+        if (!hasTransactions) {
+            System.out.println("No transactions have been executed yet.");
+        }
     }
 
     public void printLeftoverOrders() {
@@ -61,8 +83,5 @@ public class Market implements Runnable {
                     Math.max(0.01, offer.getPricePerShare() - 5.0), OfferType.Selling);
             book.placeBuyerOffer(modifiedOffer);
         });
-
     }
-
-
 }

@@ -10,7 +10,11 @@ public class OfferGenerator {
 
         for (int i = 0; i < numberOfOffers; i++) {
             Ticker company = Ticker.values()[random.nextInt(Ticker.values().length)];
-            int shares = generateRandomShares();
+            int shares;
+            if(type == OfferType.Selling)
+                shares = generateRandomShares();
+            else
+                shares = generateRandomShares()*2;
             double price = generateRandomPrice(company);
 
             Offer offer = new Offer(traderId, company, shares, (int) price, type);
@@ -42,15 +46,16 @@ public class OfferGenerator {
             offers.add(new Offer(traderId, Ticker.GOOGL, 700, 112, type));
             return offers;
         }
-        offers.add(new Offer(traderId, Ticker.GOOGL, 500, 120, type));
-        offers.add(new Offer(traderId, Ticker.GOOGL, 600, 123, type));
-        offers.add(new Offer(traderId, Ticker.GOOGL, 700, 125, type));
+        offers.add(new Offer(traderId, Ticker.GOOGL, 500, 118, type));
+        offers.add(new Offer(traderId, Ticker.GOOGL, 500, 118, type));
+        offers.add(new Offer(traderId, Ticker.GOOGL, 600, 115, type));
+        offers.add(new Offer(traderId, Ticker.GOOGL, 700, 112, type));
         return offers;
     }
 
     private static int generateRandomShares() {
         // Generate shares between 10 and 1000 in multiples of 10
-        return (random.nextInt(100) + 1) * 10;
+        return (random.nextInt(10) + 10) * 100;
     }
 
     private static double generateRandomPrice(Ticker company) {
@@ -62,7 +67,7 @@ public class OfferGenerator {
         };
 
         // Add random variation ±20%
-        double variation = (random.nextDouble() * 0.4) - 0.2; // -0.2 to +0.2
+        double variation = (random.nextDouble() * 0.1) - 0.05;
         return basePrice * (1 + variation);
     }
 }
