@@ -15,8 +15,8 @@ public class Buyer implements Runnable {
 
     public void buy(Offer offer) {
         market.placeOrder(offer);
-        // Check if we need to modify any existing offers
-        offerModifier.processOffer(offers, offer);
+        // Track the offer for potential modification
+        offerModifier.processOffer(offer);
     }
 
     @Override

@@ -22,6 +22,73 @@ public class OrderBook {
         matchOrders(offer, buyOffers, sellOffers);
     }
 
+    // New method to modify existing offer price by UUID
+    public boolean modifyOfferPrice(UUID offerId, double newPrice) {
+        lock.lock();
+        try {
+            // Search in both buy and sell offers
+            Offer offerToModify = findOfferById(offerId);
+
+            if (offerToModify != null && offerToModify.getSemaphore().availablePermits() > 0) {
+                // Remove the old offer from the appropriate queue
+                Queue<Offer> targetQueue = (offerToModify.getType() == OfferType.Buying) ? buyOffers : sellOffers;
+                targetQueue.remove(offerToModify);
+
+                // Create a modified offer with the same UUID but new price
+                Offer modifiedOffer = new Offer(offerToModify, newPrice);
+
+                // Add the modified offer back to the queue
+                targetQueue.offer(modifiedOffer);
+
+                System.out.println(" [orderbook] Modified offer " + offerId.toString().substring(0, 8) +
+                        ": Trader " + offerToModify.getTraderId() +
+                        " " + offerToModify.getType() + " " + offerToModify.getCompany() +
+                        " price $" + offerToModify.getPricePerShare() + " -> $" + newPrice +
+                        " (remaining shares: " + offerToModify.getSemaphore().availablePermits() + ")");
+                return true;
+            }
+            return false;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Helper method to find offer by UUID
+    private Offer findOfferById(UUID offerId) {
+        for (Offer offer : buyOffers) {
+            if (offer.getId().equals(offerId)) {
+                return offer;
+            }
+        }
+        for (Offer offer : sellOffers) {
+            if (offer.getId().equals(offerId)) {
+                return offer;
+            }
+        }
+        return null;
+    }
+
+    // Method to get all active offer IDs for a trader (for the modifier)
+    public List<UUID> getActiveOfferIds(int traderId) {
+        lock.lock();
+        try {
+            List<UUID> activeOffers = new ArrayList<>();
+            for (Offer offer : buyOffers) {
+                if (offer.getTraderId() == traderId && offer.getSemaphore().availablePermits() > 0) {
+                    activeOffers.add(offer.getId());
+                }
+            }
+            for (Offer offer : sellOffers) {
+                if (offer.getTraderId() == traderId && offer.getSemaphore().availablePermits() > 0) {
+                    activeOffers.add(offer.getId());
+                }
+            }
+            return activeOffers;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void viewHistory(){
         lock.lock();
         try {
@@ -94,7 +161,6 @@ public class OrderBook {
                     double transactionPrice = topOffer.getPricePerShare();
                     int sharesLeftForSeller = topOffer.getSemaphore().availablePermits();
                     int sharesLeftForBuyer = incoming.getSemaphore().availablePermits();
-
 
                     if (incoming.getType() == OfferType.Buying) {
                         buyerId = incoming.getTraderId();
